@@ -20,7 +20,9 @@ class SwiftRandomTests: XCTestCase {
         XCTAssertNotNil(Randoms.randomBool())
         XCTAssertNotNil(Randoms.randomDateWithinDaysBeforeToday(5))
         XCTAssertNotNil(Randoms.randomDate())
+#if !os(macOS)
         XCTAssertNotNil(Randoms.randomColor())
+#endif
         XCTAssertNotNil(Randoms.randomFakeName())
         XCTAssertNotNil(Randoms.randomFakeFirstName())
         XCTAssertNotNil(Randoms.randomFakeLastName())
@@ -40,7 +42,9 @@ class SwiftRandomTests: XCTestCase {
         XCTAssertNotNil(CGFloat.random())
         XCTAssertNotNil(Float.random())
         XCTAssertNotNil(Double.random())
+#if !os(macOS)
         XCTAssertNotNil(UIColor.random())
+#endif
         XCTAssertNotNil(URL.random())
     }
 
@@ -137,7 +141,7 @@ class SwiftRandomTests: XCTestCase {
             }
         }
     }
-
+#if !os(macOS)
     /// Tests using async way to get a random gravatar.
     func testRandomGravatar() {
         let async = expectation(description: "Randoms.randomGravatar")
@@ -195,7 +199,7 @@ class SwiftRandomTests: XCTestCase {
 
         waitForExpectations(timeout: 3.5, handler: nil)
     }
-    
+#endif
     /// Tests for generating random dates
     func testRandomDates() {
         

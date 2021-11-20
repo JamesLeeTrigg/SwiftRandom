@@ -7,6 +7,8 @@
 
 #if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 // each type has its own random
 
@@ -119,7 +121,7 @@ public extension Date {
     }
 
 }
-
+#if !os(macOS)
 public extension UIColor {
     /// SwiftRandom extension
     static func random(_ randomAlpha: Bool = false) -> UIColor {
@@ -130,6 +132,7 @@ public extension UIColor {
         return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: alpha)
     }
 }
+#endif
 
 public extension URL {
     /// SwiftRandom extension
@@ -205,11 +208,11 @@ public struct Randoms {
     public static func randomDate() -> Date {
         return Date.random()
     }
-
+#if !os(macOS)
     public static func randomColor(_ randomAlpha: Bool = false) -> UIColor {
         return UIColor.random(randomAlpha)
     }
-
+#endif
     public static func randomNSURL() -> URL {
         return URL.random()
     }
@@ -284,7 +287,7 @@ public struct Randoms {
         
         static let allValues = [Standard, MM, Identicon, MonsterID, Wavatar, Retro]
     }
-    
+#if !os(macOS)
     public static func createGravatar(_ style: Randoms.GravatarStyle = .Standard, size: Int = 80, completion: ((_ image: UIImage?, _ error: Error?) -> Void)?) {
         var url = "https://secure.gravatar.com/avatar/thisimagewillnotbefound?s=\(size)"
         if style != .Standard {
@@ -309,4 +312,5 @@ public struct Randoms {
         let options = Randoms.GravatarStyle.allValues
         Randoms.createGravatar(options.randomElement()!, size: size, completion: completion)
     }
+#endif
 }
