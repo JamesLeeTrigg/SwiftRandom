@@ -3,7 +3,8 @@
 //
 //  Created by Furkan Yilmaz on 7/10/15.
 //  Copyright (c) 2015 Furkan Yilmaz. All rights reserved.
-//
+//  Updated by James Trigg on 12/21/2024 under the MIT License
+//  Original repository: https://github.com/thellimist/SwiftRandom/
 
 #if canImport(UIKit)
 import UIKit
@@ -143,20 +144,32 @@ public extension URL {
 }
 
 
+/// A collection of methods for generating random values of various types.
 public struct Randoms {
 
     //==========================================================================================================
     // MARK: - Object randoms
     //==========================================================================================================
 
+    /// Generates a random boolean value.
+    /// - Returns: A random `Bool` value.
     public static func randomBool() -> Bool {
         return Bool.random()
     }
 
+    /// Generates a random integer within the specified range.
+    /// - Parameters:
+    ///   - range: The range within which to generate the random number.
+    /// - Returns: A random integer within the given range.
     public static func randomInt(_ range: Range<Int>) -> Int {
         return Int.random(in: range)
     }
 
+    /// Generates a random integer between lower and upper bounds (inclusive).
+    /// - Parameters:
+    ///   - lower: The lower bound of the range (default: 0).
+    ///   - upper: The upper bound of the range (default: 100).
+    /// - Returns: A random integer between the lower and upper bounds.
     public static func randomInt(_ lower: Int = 0, _ upper: Int = 100) -> Int {
         return Int.random(lower, upper)
     }
@@ -169,10 +182,18 @@ public struct Randoms {
         return Int32.random(lower, upper)
     }
 
+    /// Generates a random string with the specified length.
+    /// - Parameter length: The desired length of the string.
+    /// - Returns: A random string containing alphanumeric characters.
     public static func randomString(ofLength length: Int) -> String {
         return String.random(ofLength: length)
     }
     
+    /// Generates a random string with a length between the specified minimum and maximum.
+    /// - Parameters:
+    ///   - min: The minimum length of the string.
+    ///   - max: The maximum length of the string.
+    /// - Returns: A random string with a length between min and max.
     public static func randomString(minimumLength min: Int, maximumLength max: Int) -> String {
         return String.random(minimumLength: min, maximumLength: max)
     }
@@ -185,6 +206,9 @@ public struct Randoms {
         return String.random(withCharactersInString: string, minimumLength: min, maximumLength: max)
     }
     
+    /// Checks if a random percentage is over the specified threshold.
+    /// - Parameter percentage: The percentage threshold to check against (0-100).
+    /// - Returns: `true` if the random value is greater than or equal to the percentage.
     public static func randomPercentageisOver(_ percentage: Int) -> Bool {
         return Int.random() >= percentage
     }
@@ -221,34 +245,48 @@ public struct Randoms {
     // MARK: - Fake random data generators
     //==========================================================================================================
 
+    /// Generates a random fake full name.
+    /// - Returns: A string containing a randomly generated first and last name.
     public static func randomFakeName() -> String {
         return randomFakeFirstName() + " " + randomFakeLastName()
     }
     
+    /// Generates a random fake first name.
+    /// - Returns: A string containing a randomly selected first name.
     public static func randomFakeFirstName() -> String {
         let firstNameList = ["Henry", "William", "Geoffrey", "Jim", "Yvonne", "Jamie", "Leticia", "Priscilla", "Sidney", "Nancy", "Edmund", "Bill", "Megan"]
         return firstNameList.randomElement()!
     }
     
+    /// Generates a random fake last name.
+    /// - Returns: A string containing a randomly selected last name.
     public static func randomFakeLastName() -> String {
         let lastNameList = ["Pearson", "Adams", "Cole", "Francis", "Andrews", "Casey", "Gross", "Lane", "Thomas", "Patrick", "Strickland", "Nicolas", "Freeman"]
         return lastNameList.randomElement()!
     }
 
+    /// Generates a random fake gender.
+    /// - Returns: A string containing a randomly selected gender.
     public static func randomFakeGender() -> String {
         return Bool.random() ? "Male" : "Female"
     }
 
+    /// Generates a random fake conversation.
+    /// - Returns: A string containing a randomly selected conversation.
     public static func randomFakeConversation() -> String {
         let convoList = ["You embarrassed me this evening.", "You don't think that was just lemonade in your glass, do you?", "Do you ever think we should just stop doing this?", "Why didn't he come and talk to me himself?", "Promise me you'll look after your mother.", "If you get me his phone, I might reconsider.", "I think the room is bugged.", "No! I'm tired of doing what you say.", "For some reason, I'm attracted to you."]
         return convoList.randomElement()!
     }
 
+    /// Generates a random fake title.
+    /// - Returns: A string containing a randomly selected title.
     public static func randomFakeTitle() -> String {
         let titleList = ["CEO of Google", "CEO of Facebook", "VP of Marketing @Uber", "Business Developer at IBM", "Jungler @ Fanatic", "B2 Pilot @ USAF", "Student at Stanford", "Student at Harvard", "Mayor of Raccoon City", "CTO @ Umbrella Corporation", "Professor at Pallet Town University"]
         return titleList.randomElement()!
     }
 
+    /// Generates a random fake tag.
+    /// - Returns: A string containing a randomly selected tag.
     public static func randomFakeTag() -> String {
         let tagList = ["meta", "forum", "troll", "meme", "question", "important", "like4like", "f4f"]
         return tagList.randomElement()!
@@ -259,35 +297,54 @@ public struct Randoms {
         return englishHonorificsList.randomElement()!
     }
 
+    /// Generates a random fake name and English honorific.
+    /// - Returns: A string containing a randomly generated name and English honorific.
     public static func randomFakeNameAndEnglishHonorific() -> String {
         let englishHonorific = randomEnglishHonorific()
         let name = randomFakeName()
         return englishHonorific + " " + name
     }
 
+    /// Generates a random fake city name.
+    /// - Returns: A string containing a randomly generated city name.
     public static func randomFakeCity() -> String {
         let cityPrefixes = ["North", "East", "West", "South", "New", "Lake", "Port"]
         let citySuffixes = ["town", "ton", "land", "ville", "berg", "burgh", "borough", "bury", "view", "port", "mouth", "stad", "furt", "chester", "mouth", "fort", "haven", "side", "shire"]
         return cityPrefixes.randomElement()! + citySuffixes.randomElement()!
     }
 
+    /// Generates a random currency.
+    /// - Returns: A string containing a randomly selected currency.
     public static func randomCurrency() -> String {
         let currencyList = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "ZAR", "NZD", "INR", "BRP", "CNY", "EGP", "KRW", "MXN", "SAR", "SGD",]
 
         return currencyList.randomElement()!
     }
 
-       public enum GravatarStyle: String {
+    /// Available styles for Gravatar image generation.
+    public enum GravatarStyle: String {
+        /// Default Gravatar style
         case Standard
+        /// Mystery Man style
         case MM
+        /// Geometric pattern style
         case Identicon
+        /// Monster face style
         case MonsterID
+        /// Generated faces style
         case Wavatar
+        /// 8-bit style
         case Retro
         
+        /// All available Gravatar styles
         static let allValues = [Standard, MM, Identicon, MonsterID, Wavatar, Retro]
     }
 #if !os(macOS)
+    /// Creates a Gravatar image with the specified style and size.
+    /// - Parameters:
+    ///   - style: The desired GravatarStyle (default: .Standard).
+    ///   - size: The size of the image in pixels (default: 80).
+    ///   - completion: A closure called with the generated UIImage and any error that occurred.
     public static func createGravatar(_ style: Randoms.GravatarStyle = .Standard, size: Int = 80, completion: ((_ image: UIImage?, _ error: Error?) -> Void)?) {
         var url = "https://secure.gravatar.com/avatar/thisimagewillnotbefound?s=\(size)"
         if style != .Standard {
@@ -308,6 +365,10 @@ public struct Randoms {
         }).resume()
     }
     
+    /// Generates a random Gravatar image with the specified size.
+    /// - Parameters:
+    ///   - size: The size of the image in pixels (default: 80).
+    ///   - completion: A closure called with the generated UIImage and any error that occurred.
     public static func randomGravatar(_ size: Int = 80, completion: ((_ image: UIImage?, _ error: Error?) -> Void)?) {
         let options = Randoms.GravatarStyle.allValues
         Randoms.createGravatar(options.randomElement()!, size: size, completion: completion)
