@@ -7,7 +7,11 @@
 //
 
 import XCTest
-
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 @testable import SwiftRandom
 
 /// Tests above `SwiftRandom` module.
@@ -141,9 +145,9 @@ class SwiftRandomTests: XCTestCase {
             }
         }
     }
-#if !os(macOS)
+
     /// Tests using async way to get a random gravatar.
-    func testRandomGravatar() {
+    func testRandomGravatar_async() {
         let async = expectation(description: "Randoms.randomGravatar")
 
         Randoms.randomGravatar { (image, error) in
@@ -189,7 +193,7 @@ class SwiftRandomTests: XCTestCase {
     func testRandomCreateGravatarStyleSize() {
         let async = expectation(description: "Randoms.randomGravatarStyleSize")
 
-        Randoms.createGravatar(.Retro, size: 40) { (image, error) in
+        Randoms.createGravatar(style: .Retro, size: 40) { (image, error) in
             XCTAssertNotNil(image)
             XCTAssertEqual(image?.size, CGSize(width: 40, height: 40))
             XCTAssertNil(error)
@@ -199,7 +203,7 @@ class SwiftRandomTests: XCTestCase {
 
         waitForExpectations(timeout: 3.5, handler: nil)
     }
-#endif
+
     /// Tests for generating random dates
     func testRandomDates() {
         
@@ -242,5 +246,107 @@ class SwiftRandomTests: XCTestCase {
             XCTAssertNotEqual(randomDate, lastDate)
             lastDate = randomDate
         }
+    }
+
+    func testRandomColor() {
+        let color = PlatformColor.random()
+        XCTAssertNotNil(color)
+        
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        #if canImport(UIKit)
+        let success = color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        XCTAssertTrue(success)
+        #elseif canImport(AppKit)
+        let colorSpace = NSColorSpace.sRGB
+        
+        guard let rgbColor = color.usingColorSpace(colorSpace) else {
+            XCTFail("Could not convert to sRGB color space")
+            return
+        }
+        rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #endif
+        
+        XCTAssertGreaterThanOrEqual(red, 0)
+        XCTAssertLessThanOrEqual(red, 1)
+        XCTAssertGreaterThanOrEqual(green, 0)
+        XCTAssertLessThanOrEqual(green, 1)
+        XCTAssertGreaterThanOrEqual(blue, 0)
+        XCTAssertLessThanOrEqual(blue, 1)
+        XCTAssertEqual(alpha, 1.0)
+    }
+    
+    func testRandomColorWithAlpha() {
+        let color = PlatformColor.random(true)
+        XCTAssertNotNil(color)
+        
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        #if canImport(UIKit)
+        let success = color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        XCTAssertTrue(success)
+        #elseif canImport(AppKit)
+        guard let rgbColor = color.usingColorSpace(.sRGB) else {
+            XCTFail("Could not convert to RGB color space")
+            return
+        }
+        rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #endif
+        
+        XCTAssertGreaterThanOrEqual(alpha, 0)
+        XCTAssertLessThanOrEqual(alpha, 1)
+    }
+    
+    func testGravatarCreation() {
+        let expectation = self.expectation(description: "Gravatar creation")
+        
+        Randoms.createGravatar { (image, error) in
+            XCTAssertNotNil(image)
+            XCTAssertNil(error)
+            expectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testRandomGravatar() {
+        let expectation = self.expectation(description: "Random Gravatar")
+        
+        Randoms.randomGravatar { (image, error) in
+            XCTAssertNotNil(image)
+            XCTAssertNil(error)
+            expectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testGravatarWithSize() {
+        let expectation = self.expectation(description: "Gravatar with size")
+        let size = 40
+        
+        Randoms.createGravatar(size: size) { (image, error) in
+            XCTAssertNotNil(image)
+            #if canImport(UIKit)
+            XCTAssertEqual(image?.size.width, CGFloat(size))
+            XCTAssertEqual(image?.size.height, CGFloat(size))
+            #elseif canImport(AppKit)
+            guard let imageSize = image?.size else {
+                XCTFail("Could not get image size")
+                return
+            }
+            XCTAssertEqual(imageSize.width, CGFloat(size), accuracy: 0.1)
+            XCTAssertEqual(imageSize.height, CGFloat(size), accuracy: 0.1)
+            #endif
+            expectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
     }
 }

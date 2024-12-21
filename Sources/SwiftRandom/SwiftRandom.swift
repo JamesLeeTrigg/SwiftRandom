@@ -8,8 +8,12 @@
 
 #if canImport(UIKit)
 import UIKit
+public typealias PlatformColor = UIColor
+public typealias PlatformImage = UIImage
 #elseif canImport(AppKit)
 import AppKit
+public typealias PlatformColor = NSColor
+public typealias PlatformImage = NSImage
 #endif
 // each type has its own random
 
@@ -122,18 +126,25 @@ public extension Date {
     }
 
 }
-#if !os(macOS)
-public extension UIColor {
-    /// SwiftRandom extension
-    static func random(_ randomAlpha: Bool = false) -> UIColor {
+
+public extension PlatformColor {
+    /// Generate a random color
+    /// - Parameter randomAlpha: Whether to include random alpha value
+    /// - Returns: A random color
+    static func random(_ randomAlpha: Bool = false) -> PlatformColor {
         let randomRed = CGFloat.random()
         let randomGreen = CGFloat.random()
         let randomBlue = CGFloat.random()
         let alpha = randomAlpha ? CGFloat.random() : 1.0
-        return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: alpha)
+        
+        #if canImport(UIKit)
+        return PlatformColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: alpha)
+        #elseif canImport(AppKit)
+        let srgb = NSColorSpace.genericRGB
+        return PlatformColor(colorSpace: srgb, components: [randomRed, randomGreen, randomBlue, alpha], count: 4)
+        #endif
     }
 }
-#endif
 
 public extension URL {
     /// SwiftRandom extension
@@ -143,6 +154,17 @@ public extension URL {
     }
 }
 
+/// Available styles for Gravatar image generation
+public enum GravatarStyle: String {
+    case Standard
+    case MM
+    case Identicon
+    case MonsterID
+    case Wavatar
+    case Retro
+    
+    public static let allValues = [Standard, MM, Identicon, MonsterID, Wavatar, Retro]
+}
 
 /// A collection of methods for generating random values of various types.
 public struct Randoms {
@@ -232,11 +254,11 @@ public struct Randoms {
     public static func randomDate() -> Date {
         return Date.random()
     }
-#if !os(macOS)
-    public static func randomColor(_ randomAlpha: Bool = false) -> UIColor {
-        return UIColor.random(randomAlpha)
+
+    public static func randomColor(_ randomAlpha: Bool = false) -> PlatformColor {
+        return PlatformColor.random(randomAlpha)
     }
-#endif
+
     public static func randomNSURL() -> URL {
         return URL.random()
     }
@@ -321,57 +343,70 @@ public struct Randoms {
         return currencyList.randomElement()!
     }
 
-    /// Available styles for Gravatar image generation.
-    public enum GravatarStyle: String {
-        /// Default Gravatar style
-        case Standard
-        /// Mystery Man style
-        case MM
-        /// Geometric pattern style
-        case Identicon
-        /// Monster face style
-        case MonsterID
-        /// Generated faces style
-        case Wavatar
-        /// 8-bit style
-        case Retro
-        
-        /// All available Gravatar styles
-        static let allValues = [Standard, MM, Identicon, MonsterID, Wavatar, Retro]
-    }
-#if !os(macOS)
-    /// Creates a Gravatar image with the specified style and size.
+    /// Creates a Gravatar with specified style and size
     /// - Parameters:
-    ///   - style: The desired GravatarStyle (default: .Standard).
-    ///   - size: The size of the image in pixels (default: 80).
-    ///   - completion: A closure called with the generated UIImage and any error that occurred.
-    public static func createGravatar(_ style: Randoms.GravatarStyle = .Standard, size: Int = 80, completion: ((_ image: UIImage?, _ error: Error?) -> Void)?) {
+    ///   - style: The style of Gravatar to create
+    ///   - size: The size in pixels
+    ///   - completion: Callback with the created image or error
+    public static func createGravatar(style: GravatarStyle = .Standard, 
+                                    size: Int = 80, 
+                                    completion: @escaping ((_ image: PlatformImage?, _ error: Error?) -> Void)) {
         var url = "https://secure.gravatar.com/avatar/thisimagewillnotbefound?s=\(size)"
         if style != .Standard {
             url += "&d=\(style.rawValue.lowercased())"
         }
         
-        let request = URLRequest(url: URL(string: url)! as URL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 5.0)
-        let session = URLSession.shared
+        guard let requestURL = URL(string: url) else {
+            completion(nil, NSError(domain: "SwiftRandom", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+            return
+        }
         
-        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
+        let request = URLRequest(url: requestURL, 
+                               cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, 
+                               timeoutInterval: 5.0)
+        
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
             DispatchQueue.main.async {
-                if error == nil {
-                    completion?(UIImage(data: data!), nil)
+                if let data = data {
+                    #if canImport(UIKit)
+                    if let image = PlatformImage(data: data) {
+                        // Resize image to requested size
+                        let format = UIGraphicsImageRendererFormat()
+                        format.scale = 1.0
+                        let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size), format: format)
+                        let resizedImage = renderer.image { _ in
+                            image.draw(in: CGRect(x: 0, y: 0, width: size, height: size))
+                        }
+                        completion(resizedImage, nil)
+                    } else {
+                        completion(nil, error)
+                    }
+                    #elseif canImport(AppKit)
+                    if let image = PlatformImage(data: data) {
+                        // Resize image to requested size
+                        let resizedImage = NSImage(size: NSSize(width: size, height: size))
+                        resizedImage.lockFocus()
+                        image.draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+                        resizedImage.unlockFocus()
+                        completion(resizedImage, nil)
+                    } else {
+                        completion(nil, error)
+                    }
+                    #endif
                 } else {
-                    completion?(nil, error)
+                    completion(nil, error)
                 }
             }
-        }).resume()
+        }.resume()
     }
     
-    /// Generates a random Gravatar image with the specified size.
+    /// Creates a random Gravatar
     /// - Parameters:
-    ///   - size: The size of the image in pixels (default: 80).
-    ///   - completion: A closure called with the generated UIImage and any error that occurred.
-    public static func randomGravatar(_ size: Int = 80, completion: ((_ image: UIImage?, _ error: Error?) -> Void)?) {
-        let options = Randoms.GravatarStyle.allValues
-        Randoms.createGravatar(options.randomElement()!, size: size, completion: completion)
+    ///   - size: The size in pixels
+    ///   - completion: Callback with the created image or error
+    public static func randomGravatar(_ size: Int = 80, 
+                                    completion: @escaping ((_ image: PlatformImage?, _ error: Error?) -> Void)) {
+        let options = GravatarStyle.allValues
+        createGravatar(style: options.randomElement()!, size: size, completion: completion)
     }
-#endif
 }
